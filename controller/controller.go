@@ -11,7 +11,13 @@ import (
 func GetAllCars(c *fiber.Ctx) error {
 	var cars []model.Car = service.GetAllCars(c)
 
-	return c.JSON(cars)
+	var response model.Response[[]model.Car] = model.Response[[]model.Car]{
+		Success: true,
+		Message: "All cars data",
+		Data:    cars,
+	}
+
+	return c.JSON(response)
 }
 
 func GetCar(c *fiber.Ctx) error {
@@ -19,19 +25,27 @@ func GetCar(c *fiber.Ctx) error {
 
 	var car model.Car = service.GetCar(carID, c)
 	if car.ID == "" {
-		return c.Status(http.StatusNotFound).JSON(fiber.Map{
-			"message": "Car not found",
+		return c.Status(http.StatusNotFound).JSON(model.Response[any]{
+			Success: false,
+			Message: "Car data not found",
 		})
 	}
 
-	return c.JSON(car)
+	return c.JSON(model.Response[model.Car]{
+		Success: true,
+		Message: "Car data found",
+		Data:    car,
+	})
 }
 
 func CreateCar(c *fiber.Ctx) error {
 	var carInput *model.CarInput = new(model.CarInput)
 
 	if err := c.BodyParser(carInput); err != nil {
-		return c.Status(http.StatusUnprocessableEntity).SendString(err.Error())
+		return c.Status(http.StatusUnprocessableEntity).JSON(model.Response[any]{
+			Success: false,
+			Message: "Please fill all the required fields",
+		})
 	}
 
 	var errors []*model.ErrorResponse = carInput.ValidateStruct()
@@ -42,7 +56,11 @@ func CreateCar(c *fiber.Ctx) error {
 
 	var createdCar model.Car = service.CreateCar(*carInput, c)
 
-	return c.Status(http.StatusCreated).JSON(createdCar)
+	return c.Status(http.StatusCreated).JSON(model.Response[model.Car]{
+		Success: true,
+		Message: "Car data added",
+		Data:    createdCar,
+	})
 }
 
 func UpdateCar(c *fiber.Ctx) error {
@@ -51,7 +69,10 @@ func UpdateCar(c *fiber.Ctx) error {
 	var carInput *model.CarInput = new(model.CarInput)
 
 	if err := c.BodyParser(carInput); err != nil {
-		return c.Status(http.StatusUnprocessableEntity).SendString(err.Error())
+		return c.Status(http.StatusUnprocessableEntity).JSON(model.Response[any]{
+			Success: false,
+			Message: err.Error(),
+		})
 	}
 
 	var errors []*model.ErrorResponse = carInput.ValidateStruct()
@@ -62,20 +83,26 @@ func UpdateCar(c *fiber.Ctx) error {
 
 	var updatedCar model.Car = service.UpdateCar(carID, *carInput, c)
 
-	return c.JSON(updatedCar)
+	return c.JSON(model.Response[model.Car]{
+		Success: true,
+		Message: "Car data updated",
+		Data:    updatedCar,
+	})
 }
 
 func DeleteCar(c *fiber.Ctx) error {
 	var carID string = c.Params("id")
 
-	var result bool = service.DeleteCar(carID, c)
-	if result == false {
-		return c.Status(http.StatusNotFound).JSON(fiber.Map{
-			"message": "Car not found",
+	var isSuccess bool = service.DeleteCar(carID, c)
+	if !isSuccess {
+		return c.Status(http.StatusNotFound).JSON(model.Response[any]{
+			Success: false,
+			Message: "Car data not found",
 		})
 	}
 
-	return c.JSON(fiber.Map{
-		"message": "Car deleted",
+	return c.JSON(model.Response[any]{
+		Success: true,
+		Message: "Car data deleted",
 	})
 }
