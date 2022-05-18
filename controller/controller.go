@@ -31,8 +31,7 @@ func CreateCar(c *fiber.Ctx) error {
 	var carInput *model.CarInput = new(model.CarInput)
 
 	if err := c.BodyParser(carInput); err != nil {
-		c.Status(http.StatusUnprocessableEntity).SendString(err.Error())
-		return err
+		return c.Status(http.StatusUnprocessableEntity).SendString(err.Error())
 	}
 
 	var errors []*model.ErrorResponse = carInput.ValidateStruct()
@@ -44,4 +43,24 @@ func CreateCar(c *fiber.Ctx) error {
 	var createdCar model.Car = service.CreateCar(*carInput, c)
 
 	return c.Status(http.StatusCreated).JSON(createdCar)
+}
+
+func UpdateCar(c *fiber.Ctx) error {
+	var carID string = c.Params("id")
+
+	var carInput *model.CarInput = new(model.CarInput)
+
+	if err := c.BodyParser(carInput); err != nil {
+		return c.Status(http.StatusUnprocessableEntity).SendString(err.Error())
+	}
+
+	var errors []*model.ErrorResponse = carInput.ValidateStruct()
+
+	if errors != nil {
+		return c.Status(http.StatusBadRequest).JSON(errors)
+	}
+
+	var updatedCar model.Car = service.UpdateCar(carID, *carInput, c)
+
+	return c.JSON(updatedCar)
 }

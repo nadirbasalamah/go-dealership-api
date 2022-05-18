@@ -69,3 +69,35 @@ func CreateCar(input model.CarInput, c *fiber.Ctx) model.Car {
 
 	return *createdCar
 }
+
+func UpdateCar(id string, input model.CarInput, c *fiber.Ctx) model.Car {
+	carID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return model.Car{}
+	}
+
+	var query primitive.D = bson.D{{Key: "_id", Value: carID}}
+	var update primitive.D = bson.D{{
+		Key: "$set",
+		Value: bson.D{
+			{Key: "brand", Value: input.Brand},
+			{Key: "name", Value: input.Name},
+			{Key: "year", Value: input.Year},
+			{Key: "price", Value: input.Price},
+		},
+	}}
+
+	var collection *mongo.Collection = database.DB.Database.Collection("cars")
+
+	var updateResult *mongo.SingleResult = collection.FindOneAndUpdate(c.Context(), query, update)
+
+	if updateResult.Err() != nil {
+		if err == mongo.ErrNoDocuments {
+			return model.Car{}
+		}
+		return model.Car{}
+	}
+
+	var car model.Car = GetCar(id, c)
+	return car
+}

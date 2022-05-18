@@ -9,4 +9,5 @@ func SetupRoutes(app *fiber.App) {
 	app.Get("/api/cars", controller.GetAllCars)
 	app.Get("api/cars/:id", controller.GetCar)
 	app.Post("/api/cars", controller.CreateCar)
+	app.Put("/api/cars/:id", controller.UpdateCar)
 }
