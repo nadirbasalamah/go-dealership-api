@@ -6,5 +6,7 @@ import (
 )
 
 func SetupRoutes(app *fiber.App) {
+	app.Get("/api/cars", controller.GetAllCars)
+	app.Get("api/cars/:id", controller.GetCar)
 	app.Post("/api/cars", controller.CreateCar)
 }
