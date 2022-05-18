@@ -64,3 +64,18 @@ func UpdateCar(c *fiber.Ctx) error {
 
 	return c.JSON(updatedCar)
 }
+
+func DeleteCar(c *fiber.Ctx) error {
+	var carID string = c.Params("id")
+
+	var result bool = service.DeleteCar(carID, c)
+	if result == false {
+		return c.Status(http.StatusNotFound).JSON(fiber.Map{
+			"message": "Car not found",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"message": "Car deleted",
+	})
+}

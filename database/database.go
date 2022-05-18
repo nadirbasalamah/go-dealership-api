@@ -35,3 +35,7 @@ func Connect() error {
 
 	return nil
 }
+
+func GetCollection(name string) *mongo.Collection {
+	return DB.Database.Collection(name)
+}

@@ -12,7 +12,7 @@ import (
 func GetAllCars(c *fiber.Ctx) []model.Car {
 	var query primitive.D = bson.D{{}}
 
-	cursor, err := database.DB.Database.Collection("cars").Find(c.Context(), query)
+	cursor, err := database.GetCollection("cars").Find(c.Context(), query)
 	if err != nil {
 		return []model.Car{}
 	}
@@ -33,7 +33,7 @@ func GetCar(id string, c *fiber.Ctx) model.Car {
 	}
 
 	var query primitive.D = bson.D{{Key: "_id", Value: carID}}
-	var collection *mongo.Collection = database.DB.Database.Collection("cars")
+	var collection *mongo.Collection = database.GetCollection("cars")
 
 	var carData *mongo.SingleResult = collection.FindOne(c.Context(), query)
 
@@ -51,7 +51,7 @@ func CreateCar(input model.CarInput, c *fiber.Ctx) model.Car {
 		Price: input.Price,
 	}
 
-	var collection *mongo.Collection = database.DB.Database.Collection("cars")
+	var collection *mongo.Collection = database.GetCollection("cars")
 
 	car.ID = ""
 
@@ -87,7 +87,7 @@ func UpdateCar(id string, input model.CarInput, c *fiber.Ctx) model.Car {
 		},
 	}}
 
-	var collection *mongo.Collection = database.DB.Database.Collection("cars")
+	var collection *mongo.Collection = database.GetCollection("cars")
 
 	var updateResult *mongo.SingleResult = collection.FindOneAndUpdate(c.Context(), query, update)
 
@@ -100,4 +100,23 @@ func UpdateCar(id string, input model.CarInput, c *fiber.Ctx) model.Car {
 
 	var car model.Car = GetCar(id, c)
 	return car
+}
+
+func DeleteCar(id string, c *fiber.Ctx) bool {
+	carID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return false
+	}
+
+	var query primitive.D = bson.D{{Key: "_id", Value: carID}}
+	var collection *mongo.Collection = database.GetCollection("cars")
+
+	result, err := collection.DeleteOne(c.Context(), query)
+	var isFailed bool = err != nil || result.DeletedCount < 1
+
+	if isFailed {
+		return !isFailed
+	}
+
+	return true
 }
