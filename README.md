@@ -19,3 +19,17 @@ cp .env.example .env
 ```
 go run main.go
 ```
+
+5. For docker user, fill the `VOLUME` field in `.env` file with the correct directory.
+
+6. Build the application.
+
+```
+docker compose build
+```
+
+7. Run the application.
+
+```
+docker compose up
+```

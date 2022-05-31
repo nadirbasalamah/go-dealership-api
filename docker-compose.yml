@@ -1,0 +1,26 @@
+version: '3.7'
+
+services:
+  dealership-api-service:
+    build: .
+    environment:
+      - DATABASE_NAME=${DATABASE_NAME}
+      - MONGO_URI=mongodb://mongodb-service:27017
+    ports:
+      - 3000:3000
+    networks:
+      - my-network
+    depends_on:
+      - mongodb-service
+  
+  mongodb-service:
+    image: mongo:latest
+    ports:
+      - 27017
+    volumes:
+      - ${VOLUME}:/data/db
+    networks:
+      - my-network
+
+networks:
+  my-network:
